@@ -1,11 +1,11 @@
 /*
- * opyright 2017 NXP
+ * Copyright 2017 NXP
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
-#ifndef IMX8MQ_EVK_ANDROID_H
-#define IMX8MQ_EVK_ANDROID_H
+#ifndef __MX8M_VAR_DART_ANDROID_H
+#define __MX8M_VAR_DART_ANDROID_H
 
 #define CONFIG_BOOTLOADER_OFFSET_33K
 #define CONFIG_BCB_SUPPORT
@@ -50,4 +50,4 @@
 	"fdt_high=0xffffffffffffffff\0"		\
 	"initrd_high=0xffffffffffffffff\0"	\
 
-#endif /* IMX8MQ_EVK_ANDROID_H */
+#endif /* __MX8M_VAR_DART_ANDROID_H */

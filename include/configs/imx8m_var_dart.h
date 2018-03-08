@@ -297,6 +297,6 @@
 #define CONFIG_OF_SYSTEM_SETUP
 
 #if defined(CONFIG_ANDROID_SUPPORT)
-#include "mx8m_var_dart_android.h"
+#include "imx8m_var_dart_android.h"
 #endif
 #endif
