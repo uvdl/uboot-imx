@@ -248,6 +248,12 @@ int power_init_board(void)
 	if (ret < 0)
 		return ret;
 
+	/* set SW3A standby mode to off */
+	pmic_reg_read(p, PFUZE100_SW3AMODE, &reg);
+	reg &= ~0xf;
+	reg |= APS_OFF;
+	pmic_reg_write(p, PFUZE100_SW3AMODE, reg);
+
 	set_vdd_regulator(VDD_ARM_I2C_BUS, "VDD_ARM");
 	set_vdd_regulator(VDD_SOC_I2C_BUS, "VDD_SOC");
 
