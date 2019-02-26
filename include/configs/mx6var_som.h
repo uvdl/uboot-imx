@@ -243,6 +243,18 @@
 		"fi;\0" \
 	"findfdt="\
 		"if test $fdt_file = undefined; then " \
+			"if test $board_name = IRIS2_R0; then " \
+				"setenv fdt_file imx6q-iris2-R0.dtb; " \
+			"fi; " \
+			"if test $board_name = IRIS2_R1; then " \
+				"setenv fdt_file imx6q-iris2-R1.dtb; " \
+			"fi; " \
+			"if test $board_name = IRIS2_R2; then " \
+				"setenv fdt_file imx6q-iris2-R2.dtb; " \
+			"fi; " \
+			"if test $board_name = IRIS2_R3; then " \
+				"setenv fdt_file imx6q-iris2-R3.dtb; " \
+			"fi; " \
 			"if test $board_name = DT6CUSTOM && test $board_rev = MX6Q; then " \
 				"setenv fdt_file imx6q-var-dart.dtb; " \
 			"fi; " \
