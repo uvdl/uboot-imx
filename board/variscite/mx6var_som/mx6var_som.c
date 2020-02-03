@@ -152,6 +152,15 @@ enum iris2_ident {
 	NIGHTCRAWLER,
 };
 
+/* List of GPIOs that need to be set to INPUT */
+static iomux_v3_cfg_t const gpio_nightcrawler_dis[] = {
+	IOMUX_PADS(PAD_ENET_MDC__GPIO1_IO31	| MUX_PAD_CTRL(NO_PAD_CTRL)), /* DART_IO_0 10K PD */
+	IOMUX_PADS(PAD_ENET_MDIO__GPIO1_IO22	| MUX_PAD_CTRL(NO_PAD_CTRL)), /* DART_IO_1 10K PD */
+	IOMUX_PADS(PAD_DISP0_DAT2__GPIO4_IO23	| MUX_PAD_CTRL(NO_PAD_CTRL)), /* DART_IO_2 10K PD */
+	IOMUX_PADS(PAD_DISP0_DAT15__GPIO5_IO09	| MUX_PAD_CTRL(NO_PAD_CTRL)), /* DART_IO_3 10K PD */
+	IOMUX_PADS(PAD_DISP0_DAT16__GPIO5_IO10	| MUX_PAD_CTRL(NO_PAD_CTRL)), /* SILVUS_SHUTDOWN 10K PD */
+};
+
 /*
  * Returns 1 if the carrier board is Iris2, 2 if carrier is Nightcrawler
  *  (and the SOM is DART-MX6)
@@ -1442,6 +1451,7 @@ int board_late_init(void)
 		int revision = get_iris2_rev();
 
 		if (ident == IRIS2) {
+			/*SETUP_IOMUX_PADS(gpio_iris2_dis);*/
 			if (revision == IRIS2_R0)
 				setenv("board_name", "IRIS2_R0");
 			else if (revision == IRIS2_R1)
@@ -1453,6 +1463,7 @@ int board_late_init(void)
 			else
 				setenv("board_name", "DT6CUSTOM");
 		} else if (ident == NIGHTCRAWLER) {
+			SETUP_IOMUX_PADS(gpio_nightcrawler_dis);
 			if (revision == IRIS2_R0)
 				setenv("board_name", "NIGHTCRAWLER_R0");
 			else if (revision == IRIS2_R1)
