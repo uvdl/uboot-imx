@@ -130,48 +130,66 @@ static inline bool is_dart_board(void)
 }
 
 
-#define GPIO4_IO21_PAD_CTRL (PAD_CTL_PUS_100K_DOWN | \
+#define PUS_100K_DOWN_PAD_CTRL (PAD_CTL_PUS_100K_DOWN | \
 	PAD_CTL_SPEED_HIGH | PAD_CTL_DSE_40ohm |			\
 	PAD_CTL_SRE_FAST)
-static iomux_v3_cfg_t const gpio4_21_en[] = {
-	IOMUX_PADS(PAD_DISP0_DAT0__GPIO4_IO21	| MUX_PAD_CTRL(GPIO4_IO21_PAD_CTRL)),
+#define PUS_100K_UP_PAD_CTRL (PAD_CTL_PUS_100K_UP | \
+	PAD_CTL_SPEED_HIGH | PAD_CTL_DSE_40ohm |			\
+	PAD_CTL_SRE_FAST)
+
+static iomux_v3_cfg_t const gpio4_21_gpio3_21_en[] = {
+	IOMUX_PADS(PAD_DISP0_DAT0__GPIO4_IO21	| MUX_PAD_CTRL(PUS_100K_DOWN_PAD_CTRL)),
+	IOMUX_PADS(PAD_EIM_D21__GPIO3_IO21		| MUX_PAD_CTRL(PUS_100K_UP_PAD_CTRL)),
 };
-static iomux_v3_cfg_t const gpio4_21_dis[] = {
+static iomux_v3_cfg_t const gpio4_21_gpio3_21_dis[] = {
 	IOMUX_PADS(PAD_DISP0_DAT0__GPIO4_IO21	| MUX_PAD_CTRL(NO_PAD_CTRL)),
+	IOMUX_PADS(PAD_EIM_D21__GPIO3_IO21		| MUX_PAD_CTRL(NO_PAD_CTRL)),
+};
+
+enum iris2_ident {
+	UNKNOWN = 0,
+	IRIS2,
+	NIGHTCRAWLER,
 };
 
 /*
- * Returns true if the carrier board is Iris2
+ * Returns 1 if the carrier board is Iris2, 2 if carrier is Nightcrawler
  *  (and the SOM is DART-MX6)
  */
-static inline bool is_iris2_board(void)
+static inline int get_iris2_ident(void)
 {
-	bool ret = false;
+	int ident = UNKNOWN;
 
-	SETUP_IOMUX_PADS(gpio4_21_en);
-	
+	SETUP_IOMUX_PADS(gpio4_21_gpio3_21_en);
+
 	gpio_request(IMX_GPIO_NR(4, 21), "");
+	gpio_request(IMX_GPIO_NR(3, 21), "");
 	gpio_direction_input(IMX_GPIO_NR(4, 21));
+	gpio_direction_input(IMX_GPIO_NR(3, 21));
 
-	ret = gpio_get_value(IMX_GPIO_NR(4, 21));
+	lsb = gpio_get_value(IMX_GPIO_NR(4, 21));
+	msb = gpio_get_value(IMX_GPIO_NR(3, 21));
 
-	SETUP_IOMUX_PADS(gpio4_21_dis);
+	if(msb == 1){
+		if(lsb == 1) ret = IRIS2;
+		else ret = NIGHTCRAWLER;
+	}
+
+	SETUP_IOMUX_PADS(gpio4_21_gpio3_21_dis);
 	return ret;
 }
 
 enum iris2_rev {
-	IRIS2_R0,
+	IRIS2_R0 = 0,
 	IRIS2_R1,
 	IRIS2_R2,
 	IRIS2_R3,
 	IRIS2_NONE,
 };
-#define GPIO4_IO29_30_PAD_CTRL (PAD_CTL_PUS_100K_UP | \
-	PAD_CTL_SPEED_HIGH | PAD_CTL_DSE_40ohm |			\
-	PAD_CTL_SRE_FAST)
+
 static iomux_v3_cfg_t const gpio4_29_30_en[] = {
-	IOMUX_PADS(PAD_DISP0_DAT8__GPIO4_IO29	| MUX_PAD_CTRL(GPIO4_IO29_30_PAD_CTRL)),
-	IOMUX_PADS(PAD_DISP0_DAT9__GPIO4_IO30	| MUX_PAD_CTRL(GPIO4_IO29_30_PAD_CTRL)),
+	IOMUX_PADS(PAD_DISP0_DAT8__GPIO4_IO29	| MUX_PAD_CTRL(PUS_100K_UP_PAD_CTRL)),
+	IOMUX_PADS(PAD_DISP0_DAT9__GPIO4_IO30	| MUX_PAD_CTRL(PUS_100K_UP_PAD_CTRL)),
 };
 static iomux_v3_cfg_t const gpio4_29_30_dis[] = {
 	IOMUX_PADS(PAD_DISP0_DAT8__GPIO4_IO29	| MUX_PAD_CTRL(NO_PAD_CTRL)),
@@ -179,7 +197,7 @@ static iomux_v3_cfg_t const gpio4_29_30_dis[] = {
 };
 
 /**
- * Gets the iris2 revision
+ * Gets the iris2/nightcrawler revision
  * GPIO4[30] 	GPIO4[29] 	Revision
  * HIGH 		HIGH 		R0
  * HIGH 		LOW 		R1
@@ -1410,27 +1428,43 @@ int power_init_board(void)
 #ifndef CONFIG_SPL_BUILD
 int board_late_init(void)
 {
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+	int ident = 0;
+#endif
 #ifdef CONFIG_ENV_IS_IN_MMC
 	mmc_late_init();
 #endif
 	print_emmc_size();
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	if(is_iris2_board()){
-		int board = get_iris2_rev();
+	ident = get_iris2_ident();
+	if (ident != UNKNOWN) {
+		int revision = get_iris2_rev();
 
-		if(board == IRIS2_R0)
-			setenv("board_name", "IRIS2_R0");
-		else if(board == IRIS2_R1)
-			setenv("board_name", "IRIS2_R1");
-		else if(board == IRIS2_R2)
-			setenv("board_name", "IRIS2_R2");
-		else if(board == IRIS2_R3)
-			setenv("board_name", "IRIS2_R3");
-		else
-			setenv("board_name", "DT6CUSTOM");
-	}
-	else{
+		if (ident == IRIS2) {
+			if (revision == IRIS2_R0)
+				setenv("board_name", "IRIS2_R0");
+			else if (revision == IRIS2_R1)
+				setenv("board_name", "IRIS2_R1");
+			else if (revision == IRIS2_R2)
+				setenv("board_name", "IRIS2_R2");
+			else if (revision == IRIS2_R3)
+				setenv("board_name", "IRIS2_R3");
+			else
+				setenv("board_name", "DT6CUSTOM");
+		} else if (ident == NIGHTCRAWLER) {
+			if (revision == IRIS2_R0)
+				setenv("board_name", "NIGHTCRAWLER_R0");
+			else if (revision == IRIS2_R1)
+				setenv("board_name", "NIGHTCRAWLER_R1");
+			else if (revision == IRIS2_R2)
+				setenv("board_name", "NIGHTCRAWLER_R2");
+			else if (revision == IRIS2_R3)
+				setenv("board_name", "NIGHTCRAWLER_R3");
+			else
+				setenv("board_name", "DT6CUSTOM");
+		}
+	} else {
 		if (is_dart_board())
 			setenv("board_name", "DT6CUSTOM");
 		else if (is_solo_custom_board())
