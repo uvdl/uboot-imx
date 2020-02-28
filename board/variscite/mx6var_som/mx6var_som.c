@@ -147,7 +147,7 @@ static iomux_v3_cfg_t const gpio4_21_gpio3_21_dis[] = {
 };
 
 enum iris2_ident {
-	DT6C,
+	VARISCITE,
 	IRIS2,
 	NIGHTCRAWLER,
 };
@@ -167,7 +167,7 @@ static iomux_v3_cfg_t const gpio_nightcrawler_dis[] = {
  */
 static inline int get_iris2_ident(void)
 {
-	int lsb, msb, ret = DT6C;
+	int lsb, msb, ret = VARISCITE;
 
 	SETUP_IOMUX_PADS(gpio4_21_gpio3_21_en);
 
