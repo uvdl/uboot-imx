@@ -197,7 +197,6 @@
 		"setenv bootargs ${bootargs} " \
 			"video=mxcfb1:off video=mxcfb2:off video=mxcfb3:off;\0"
 
-
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	MMC_BOOT_ENV_SETTINGS \
 	NAND_BOOT_ENV_SETTINGS \
@@ -243,70 +242,19 @@
 		"fi;\0" \
 	"findfdt="\
 		"if test $fdt_file = undefined; then " \
-			"if test $board_name = IRIS2_R0; then " \
-				"setenv fdt_file imx6q-iris2-R0.dtb; " \
+			"if test $board_name = IRIS2; then " \
+				"setenv fdt_file $board_fdt; " \
 			"fi; " \
-			"if test $board_name = IRIS2_R1; then " \
-				"setenv fdt_file imx6q-iris2-R1.dtb; " \
-			"fi; " \
-			"if test $board_name = IRIS2_R2; then " \
-				"setenv fdt_file imx6q-iris2-R2.dtb; " \
-			"fi; " \
-			"if test $board_name = IRIS2_R3; then " \
-				"setenv fdt_file imx6q-iris2-R3.dtb; " \
+			"if test $board_name = NIGHTCRAWLER; then " \
+				"setenv fdt_file $board_fdt; " \
 			"fi; " \
 			"if test $board_name = DT6CUSTOM && test $board_rev = MX6Q; then " \
 				"setenv fdt_file imx6q-var-dart.dtb; " \
-			"fi; " \
-			"if test $board_name = SOLOCUSTOM && test $board_rev = MX6QP; then " \
-				"setenv fdt_file imx6qp-var-som-vsc.dtb; " \
-			"fi; " \
-			"if test $board_name = SOLOCUSTOM && test $board_rev = MX6Q; then " \
-				"setenv fdt_file imx6q-var-som-vsc.dtb; " \
-			"fi; " \
-			"if test $board_name = SOLOCUSTOM && test $board_rev = MX6DL && test $board_som = SOM-SOLO; then " \
-				"setenv fdt_file imx6dl-var-som-solo-vsc.dtb; " \
-			"fi; " \
-			"if test $board_name = SOLOCUSTOM && test $board_rev = MX6DL && test $board_som = SOM-MX6; then " \
-				"setenv fdt_file imx6dl-var-som-vsc.dtb; " \
-			"fi; " \
-			"if test $board_name = MX6CUSTOM && test $board_rev = MX6QP; then " \
-				"i2c dev 2; " \
-				"if i2c probe 0x38; then " \
-					"setenv fdt_file imx6qp-var-som-cap.dtb; " \
-				"else " \
-					"setenv fdt_file imx6qp-var-som-res.dtb; " \
-				"fi; " \
-			"fi; " \
-			"if test $board_name = MX6CUSTOM && test $board_rev = MX6Q; then " \
-				"i2c dev 2; " \
-				"if i2c probe 0x38; then " \
-					"setenv fdt_file imx6q-var-som-cap.dtb; " \
-				"else " \
-					"setenv fdt_file imx6q-var-som-res.dtb; " \
-				"fi; " \
-			"fi; " \
-			"if test $board_name = MX6CUSTOM && test $board_rev = MX6DL && test $board_som = SOM-SOLO; then " \
-				"i2c dev 2; " \
-				"if i2c probe 0x38; then " \
-					"setenv fdt_file imx6dl-var-som-solo-cap.dtb; " \
-				"else " \
-					"setenv fdt_file imx6dl-var-som-solo-res.dtb; " \
-				"fi; " \
-			"fi; " \
-			"if test $board_name = MX6CUSTOM && test $board_rev = MX6DL && test $board_som = SOM-MX6; then " \
-				"i2c dev 2; " \
-				"if i2c probe 0x38; then " \
-					"setenv fdt_file imx6dl-var-som-cap.dtb; " \
-				"else " \
-					"setenv fdt_file imx6dl-var-som-res.dtb; " \
-				"fi; " \
 			"fi; " \
 			"if test $fdt_file = undefined; then " \
 				"echo WARNING: Could not determine dtb to use; " \
 			"fi; " \
 		"fi;\0"
-
 
 #define CONFIG_ARP_TIMEOUT		200UL
 

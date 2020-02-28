@@ -193,11 +193,10 @@ static inline int get_iris2_ident(void)
 }
 
 enum iris2_rev {
-	IRIS2_R0 = 0,
-	IRIS2_R1,
-	IRIS2_R2,
-	IRIS2_R3,
-	IRIS2_NONE,
+	R0 = 0,
+	R1,
+	R2,
+	R3,
 };
 
 static iomux_v3_cfg_t const gpio4_29_30_en[] = {
@@ -220,7 +219,7 @@ static iomux_v3_cfg_t const gpio4_29_30_dis[] = {
  */
 static inline int get_iris2_rev(void)
 {
-	int lsb, msb, ret = IRIS2_R0;
+	int lsb, msb, ret = R0;
 
 	SETUP_IOMUX_PADS(gpio4_29_30_en);
 	
@@ -235,12 +234,12 @@ static inline int get_iris2_rev(void)
 	printf("REV: 0x%02x 0x%02x GPIO4[30] GPIO4[29]\n", msb, lsb);
 
 	if(msb == 1){
-		if(lsb == 1) ret = IRIS2_R0;
-		else ret = IRIS2_R1;
+		if(lsb == 1) ret = R0;
+		else ret = R1;
 	}
 	else{
-		if(lsb == 1) ret = IRIS2_R2;
-		else ret = IRIS2_R3;
+		if(lsb == 1) ret = R2;
+		else ret = R3;
 	}
 
 	printf("REV: %d\n", ret);
@@ -1454,31 +1453,20 @@ int board_late_init(void)
 	int ident = get_iris2_ident();
 	if (ident != VARISCITE) {
 		int revision = get_iris2_rev();
+		char str[32];
 
 		if (ident == IRIS2) {
 			/*SETUP_IOMUX_PADS(gpio_iris2_dis);*/
-			if (revision == IRIS2_R0)
-				setenv("board_name", "IRIS2_R0");
-			else if (revision == IRIS2_R1)
-				setenv("board_name", "IRIS2_R1");
-			else if (revision == IRIS2_R2)
-				setenv("board_name", "IRIS2_R2");
-			else if (revision == IRIS2_R3)
-				setenv("board_name", "IRIS2_R3");
-			else
-				setenv("board_name", "DT6CUSTOM");
+			sprintf(str, "imx6q-iris2-R%d.dtb", revision);
+			setenv("board_name", "IRIS2");
+            setenv("board_fdt", str);
 		} else if (ident == NIGHTCRAWLER) {
 			SETUP_IOMUX_PADS(gpio_nightcrawler_dis);
-			if (revision == IRIS2_R0)
-				setenv("board_name", "NIGHTCRAWLER_R0");
-			else if (revision == IRIS2_R1)
-				setenv("board_name", "NIGHTCRAWLER_R1");
-			else if (revision == IRIS2_R2)
-				setenv("board_name", "NIGHTCRAWLER_R2");
-			else if (revision == IRIS2_R3)
-				setenv("board_name", "NIGHTCRAWLER_R3");
-			else
-				setenv("board_name", "DT6CUSTOM");
+			sprintf(str, "imx6q-nightcrawler-R%d.dtb", revision);
+			setenv("board_name", "NIGHTCRAWLER");
+            setenv("board_fdt", str);
+		} else {
+			setenv("board_name", "DT6CUSTOM");
 		}
 	} else {
 		if (is_dart_board())
