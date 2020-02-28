@@ -176,10 +176,10 @@ static inline int get_iris2_ident(void)
 	gpio_direction_input(IMX_GPIO_NR(4, 21));
 	gpio_direction_input(IMX_GPIO_NR(3, 21));
 
-	lsb = gpio_get_value(IMX_GPIO_NR(4, 21));
-	msb = gpio_get_value(IMX_GPIO_NR(3, 21));
+	msb = gpio_get_value(IMX_GPIO_NR(4, 21));
+	lsb = gpio_get_value(IMX_GPIO_NR(3, 21));
 
-	printf("IDENT: 0x%02x 0x%02x GPIO3[21] GPIO4[21]\n", msb, lsb);
+	printf("IDENT: 0x%02x 0x%02x GPIO4[21] GPIO3[21]\n", msb, lsb);
 
 	if(msb == 1){
 		if(lsb == 1) ret = IRIS2;
