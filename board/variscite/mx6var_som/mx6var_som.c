@@ -147,7 +147,7 @@ static iomux_v3_cfg_t const gpio4_21_gpio3_21_dis[] = {
 };
 
 enum iris2_ident {
-	UNKNOWN = 0,
+	DT6C,
 	IRIS2,
 	NIGHTCRAWLER,
 };
@@ -167,7 +167,7 @@ static iomux_v3_cfg_t const gpio_nightcrawler_dis[] = {
  */
 static inline int get_iris2_ident(void)
 {
-	int ident = UNKNOWN;
+	int lsb, msb, ret = DT6C;
 
 	SETUP_IOMUX_PADS(gpio4_21_gpio3_21_en);
 
@@ -179,10 +179,14 @@ static inline int get_iris2_ident(void)
 	lsb = gpio_get_value(IMX_GPIO_NR(4, 21));
 	msb = gpio_get_value(IMX_GPIO_NR(3, 21));
 
+	printf("IDENT: 0x%02x 0x%02x GPIO3[21] GPIO4[21]\n", msb, lsb);
+
 	if(msb == 1){
 		if(lsb == 1) ret = IRIS2;
 		else ret = NIGHTCRAWLER;
 	}
+
+	printf("IDENT: %d\n", ret);
 
 	SETUP_IOMUX_PADS(gpio4_21_gpio3_21_dis);
 	return ret;
@@ -216,7 +220,7 @@ static iomux_v3_cfg_t const gpio4_29_30_dis[] = {
  */
 static inline int get_iris2_rev(void)
 {
-	int lsb, msb, board;
+	int lsb, msb, ret = IRIS2_R0;
 
 	SETUP_IOMUX_PADS(gpio4_29_30_en);
 	
@@ -228,17 +232,21 @@ static inline int get_iris2_rev(void)
 	lsb = gpio_get_value(IMX_GPIO_NR(4, 29));
 	msb = gpio_get_value(IMX_GPIO_NR(4, 30));
 
+	printf("REV: 0x%02x 0x%02x GPIO4[30] GPIO4[29]\n", msb, lsb);
+
 	if(msb == 1){
-		if(lsb == 1) board = IRIS2_R0;
-		else board = IRIS2_R1;
+		if(lsb == 1) ret = IRIS2_R0;
+		else ret = IRIS2_R1;
 	}
 	else{
-		if(lsb == 1) board = IRIS2_R2;
-		else board = IRIS2_R3;
+		if(lsb == 1) ret = IRIS2_R2;
+		else ret = IRIS2_R3;
 	}
 
+	printf("REV: %d\n", ret);
+
 	SETUP_IOMUX_PADS(gpio4_29_30_dis);
-	return board;
+	return ret;
 }
 
 /*
@@ -1437,17 +1445,14 @@ int power_init_board(void)
 #ifndef CONFIG_SPL_BUILD
 int board_late_init(void)
 {
-#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	int ident = 0;
-#endif
 #ifdef CONFIG_ENV_IS_IN_MMC
 	mmc_late_init();
 #endif
 	print_emmc_size();
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	ident = get_iris2_ident();
-	if (ident != UNKNOWN) {
+	int ident = get_iris2_ident();
+	if (ident != VARISCITE) {
 		int revision = get_iris2_rev();
 
 		if (ident == IRIS2) {
