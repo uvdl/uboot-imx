@@ -146,14 +146,16 @@ static iomux_v3_cfg_t const gpio4_21_gpio3_21_dis[] = {
 	IOMUX_PADS(PAD_EIM_D21__GPIO3_IO21		| MUX_PAD_CTRL(NO_PAD_CTRL)),
 };
 
-enum iris2_ident {
-	VARISCITE,
-	IRIS2,
-	NIGHTCRAWLER,
+enum uvdl_ident {
+	VARISCITE = 0,
+	PIXC3,
+	PIXC4,
 };
 
 /* List of GPIOs that need to be set to INPUT */
-static iomux_v3_cfg_t const gpio_nightcrawler_dis[] = {
+//static iomux_v3_cfg_t const gpio_pixc3_dis[] = {
+//};
+static iomux_v3_cfg_t const gpio_pixc4_dis[] = {
 	IOMUX_PADS(PAD_ENET_MDC__GPIO1_IO31	| MUX_PAD_CTRL(NO_PAD_CTRL)), /* DART_IO_0 10K PD */
 	IOMUX_PADS(PAD_ENET_MDIO__GPIO1_IO22	| MUX_PAD_CTRL(NO_PAD_CTRL)), /* DART_IO_1 10K PD */
 	IOMUX_PADS(PAD_DISP0_DAT2__GPIO4_IO23	| MUX_PAD_CTRL(NO_PAD_CTRL)), /* DART_IO_2 10K PD */
@@ -162,10 +164,10 @@ static iomux_v3_cfg_t const gpio_nightcrawler_dis[] = {
 };
 
 /*
- * Returns 1 if the carrier board is Iris2, 2 if carrier is Nightcrawler
+ * Returns 1 if the carrier board is PixC3, 2 if carrier is PixC4, otherwise 0
  *  (and the SOM is DART-MX6)
  */
-static inline int get_iris2_ident(void)
+static inline int get_uvdl_ident(void)
 {
 	int lsb, msb, ret = VARISCITE;
 
@@ -182,8 +184,8 @@ static inline int get_iris2_ident(void)
 	printf("IDENT: 0x%02x 0x%02x GPIO4[21] GPIO3[21]\n", msb, lsb);
 
 	if(msb == 1){
-		if(lsb == 1) ret = IRIS2;
-		else ret = NIGHTCRAWLER;
+		if(lsb == 1) ret = PIXC3;
+		else ret = PIXC4;
 	}
 
 	printf("IDENT: %d\n", ret);
@@ -192,7 +194,7 @@ static inline int get_iris2_ident(void)
 	return ret;
 }
 
-enum iris2_rev {
+enum uvdl_rev {
 	R0 = 0,
 	R1,
 	R2,
@@ -209,7 +211,7 @@ static iomux_v3_cfg_t const gpio4_29_30_dis[] = {
 };
 
 /**
- * Gets the iris2/nightcrawler revision
+ * Gets the uvdl board revision
  * GPIO4[30] 	GPIO4[29] 	Revision
  * HIGH 		HIGH 		R0
  * HIGH 		LOW 		R1
@@ -217,7 +219,7 @@ static iomux_v3_cfg_t const gpio4_29_30_dis[] = {
  * LOW 			LOW 		R3
  * 
  */
-static inline int get_iris2_rev(void)
+static inline int get_uvdl_rev(void)
 {
 	int lsb, msb, ret = R0;
 
@@ -1450,23 +1452,30 @@ int board_late_init(void)
 	print_emmc_size();
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	int ident = get_iris2_ident();
+	int ident = get_uvdl_ident();
 	if (ident != VARISCITE) {
-		int revision = get_iris2_rev();
-		char str[32];
+		int revision = get_uvdl_rev();
 
-		if (ident == IRIS2) {
-			/*SETUP_IOMUX_PADS(gpio_iris2_dis);*/
-			sprintf(str, "imx6q-iris2-R%d.dtb", revision);
-			setenv("board_name", "IRIS2");
-            setenv("board_fdt", str);
-		} else if (ident == NIGHTCRAWLER) {
-			SETUP_IOMUX_PADS(gpio_nightcrawler_dis);
-			sprintf(str, "imx6q-nightcrawler-R%d.dtb", revision);
-			setenv("board_name", "NIGHTCRAWLER");
-            setenv("board_fdt", str);
+		if (ident == PIXC3) {
+			/*SETUP_IOMUX_PADS(gpio_pixc3_dis);*/
+			setenv("board_name", "iris2");		// NB: coupled with kernel dtb
+		} else if (ident == PIXC4) {
+			SETUP_IOMUX_PADS(gpio_pixc4_dis);
+			setenv("board_name", "nightcrawler");	// NB: coupled with kernel dtb
 		} else {
 			setenv("board_name", "DT6CUSTOM");
+		}
+
+		if(revision == R0)
+			setenv("board_rev", "R0");
+		else if(revision == R1)
+			setenv("board_rev", "R1");
+		else if(revision == R2)
+			setenv("board_rev", "R2");
+		else if(revision == R3)
+			setenv("board_rev", "R3");
+		else
+			setenv("board_rev", "MX6Q");
 		}
 	} else {
 		if (is_dart_board())
@@ -1475,6 +1484,13 @@ int board_late_init(void)
 			setenv("board_name", "SOLOCUSTOM");
 		else
 			setenv("board_name", "MX6CUSTOM");
+
+		if (is_mx6dqp())
+			setenv("board_rev", "MX6QP");
+		else if (is_mx6dq())
+			setenv("board_rev", "MX6Q");
+		else if (is_mx6sdl())
+			setenv("board_rev", "MX6DL");
 	}
 
 	if (is_som_solo())
@@ -1483,13 +1499,6 @@ int board_late_init(void)
 		setenv("board_som", "DART-MX6");
 	else
 		setenv("board_som", "SOM-MX6");
-
-	if (is_mx6dqp())
-		setenv("board_rev", "MX6QP");
-	else if (is_mx6dq())
-		setenv("board_rev", "MX6Q");
-	else if (is_mx6sdl())
-		setenv("board_rev", "MX6DL");
 #endif
 
 	return 0;

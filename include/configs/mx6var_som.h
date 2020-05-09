@@ -242,11 +242,8 @@
 		"fi;\0" \
 	"findfdt="\
 		"if test $fdt_file = undefined; then " \
-			"if test $board_name = IRIS2; then " \
-				"setenv fdt_file $board_fdt; " \
-			"fi; " \
-			"if test $board_name = NIGHTCRAWLER; then " \
-				"setenv fdt_file $board_fdt; " \
+			"if test $board_name = iris2 || test $board_name = nightcrawler; then " \
+				"setenv fdt_file imx6q-${board_name}-${board_rev}.dtb; " \
 			"fi; " \
 			"if test $board_name = DT6CUSTOM && test $board_rev = MX6Q; then " \
 				"setenv fdt_file imx6q-var-dart.dtb; " \
