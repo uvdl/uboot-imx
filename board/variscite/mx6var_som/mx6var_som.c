@@ -153,8 +153,6 @@ enum uvdl_ident {
 };
 
 /* List of GPIOs that need to be set to INPUT */
-//static iomux_v3_cfg_t const gpio_pixc3_dis[] = {
-//};
 static iomux_v3_cfg_t const gpio_pixc4_dis[] = {
 	IOMUX_PADS(PAD_ENET_MDC__GPIO1_IO31	| MUX_PAD_CTRL(NO_PAD_CTRL)), /* DART_IO_0 10K PD */
 	IOMUX_PADS(PAD_ENET_MDIO__GPIO1_IO22	| MUX_PAD_CTRL(NO_PAD_CTRL)), /* DART_IO_1 10K PD */
@@ -1458,10 +1456,10 @@ int board_late_init(void)
 
 		if (ident == PIXC3) {
 			/*SETUP_IOMUX_PADS(gpio_pixc3_dis);*/
-			setenv("board_name", "iris2");		// NB: coupled with kernel dtb
+			setenv("board_name", "iris2");		/* NB: coupled with kernel dtb */
 		} else if (ident == PIXC4) {
 			SETUP_IOMUX_PADS(gpio_pixc4_dis);
-			setenv("board_name", "nightcrawler");	// NB: coupled with kernel dtb
+			setenv("board_name", "nightcrawler");	/* NB: coupled with kernel dtb */
 		} else {
 			setenv("board_name", "DT6CUSTOM");
 		}
@@ -1476,7 +1474,6 @@ int board_late_init(void)
 			setenv("board_rev", "R3");
 		else
 			setenv("board_rev", "MX6Q");
-		}
 	} else {
 		if (is_dart_board())
 			setenv("board_name", "DT6CUSTOM");
